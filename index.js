@@ -88,13 +88,13 @@ Compiler.prototype.resolve = function(type, from, base, key) {
     if (this.root.used[id] && !this.root.definitions[id]) {
       var k = this.root.used[id];
       this.root.definitions[id] = k[0][k[1]];
-      k[0][k[1]] = { $ref: '#/definitions/' + id };
+      k[0][k[1]] = this.root.definitions[id];
     }
   
     // If already defined, reuse
     if (this.root.definitions[id])
-      return { $ref: '#/definitions/' + id };
-  
+      return this.root.definitions[id];
+
     // Compile the message or enum
     var res;
     if (this.messages[id])
@@ -107,7 +107,7 @@ Compiler.prototype.resolve = function(type, from, base, key) {
       // If used, or at the root level, make a definition
       if (this.root.used[id] || !base) {
         this.root.definitions[id] = res;
-        res = { $ref: '#/definitions/' + id };
+        res = this.root.definitions[id];
       }
       
       // Mark as used if not an Enum
@@ -151,7 +151,10 @@ Compiler.prototype.compileMessage = function(message, root) {
     title: message.name,
     type: 'object',
     properties: {},
-    required: []
+    required: [],
+    repeated: [],
+    optional: [],
+    tags: {},
   };
   
   message.fields.forEach(function(field) {
@@ -180,11 +183,14 @@ Compiler.prototype.compileMessage = function(message, root) {
     
     if (field.required)
       res.required.push(field.name);
+    if (field.repeated)
+      res.repeated.push(field.name);
+    if (field.optional)
+      res.optional.push(field.name);
+    if (field.tag)
+      res.tags[field.name] = field.tag;
   }, this);
-  
-  if (res.required.length === 0)
-    delete res.required;
-  
+
   return res;
 };
 
