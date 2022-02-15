@@ -13,7 +13,7 @@ commander
     var result = compile(file, model);
     
     if (format === 'json')
-      process.stdout.write(JSON.stringify(result, false, 2) + '\n');
+      process.stdout.write(JSON.stringify(result));
     else if (format === 'yaml')
       process.stdout.write(yaml.dump(result, { noRefs: true }));
   })
